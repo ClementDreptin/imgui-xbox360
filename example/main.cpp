@@ -4,8 +4,8 @@
 #include "imgui_impl_xbox360.h"
 #include "imgui_impl_dx9.h"
 
-Direct3D *g_pD3D = nullptr;
-D3DDevice *g_pd3dDevice = nullptr;
+Direct3D *g_pD3D = NULL;
+D3DDevice *g_pd3dDevice = NULL;
 
 void CreateD3DDevice()
 {
@@ -112,10 +112,10 @@ void Render()
     g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
     g_pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
     D3DCOLOR clear_col_dx = D3DCOLOR_RGBA((int)(clear_color.x * clear_color.w * 255.0f), (int)(clear_color.y * clear_color.w * 255.0f), (int)(clear_color.z * clear_color.w * 255.0f), (int)(clear_color.w * 255.0f));
-    g_pd3dDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, clear_col_dx, 1.0f, 0);
+    g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, clear_col_dx, 1.0f, 0);
     ImGui::Render();
     ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-    g_pd3dDevice->Present(nullptr, nullptr, nullptr, nullptr);
+    g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
 }
 
 void __cdecl main()
