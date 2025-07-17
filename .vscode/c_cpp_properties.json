@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "Debug",
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/example/imgui",
+                "${env:XEDK}/include/xbox"
+            ],
+            "defines": ["_DEBUG", "_XBOX", "_MBCS"]
+        },
+        {
+            "name": "Release",
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/example/imgui",
+                "${env:XEDK}/include/xbox"
+            ],
+            "defines": ["NDEBUG", "_XBOX", "_MBCS"]
+        }
+    ],
+    "version": 4
+}
