@@ -94,10 +94,11 @@ static bool ImGui_ImplDX9_LoadShaders()
     ID3DXBuffer *pErrorMsg = NULL;
 
     // Compile vertex shader
-    HRESULT hr = D3DXCompileShader(g_VertexShaderProgram, (UINT)strlen(g_VertexShaderProgram), NULL, NULL, "main", "vs_2_0", 0, &pShaderCode, &pErrorMsg, NULL);
+    HRESULT hr = D3DXCompileShader(g_VertexShaderProgram, strlen(g_VertexShaderProgram), NULL, NULL, "main", "vs_2_0", 0, &pShaderCode, &pErrorMsg, NULL);
     if (FAILED(hr))
     {
-        OutputDebugStringA(pErrorMsg ? (CHAR *)pErrorMsg->GetBufferPointer() : "");
+        OutputDebugStringA("Couldn't compile vertex shader.\n");
+        OutputDebugStringA(pErrorMsg ? (char *)pErrorMsg->GetBufferPointer() : "");
         return false;
     }
 
@@ -109,10 +110,11 @@ static bool ImGui_ImplDX9_LoadShaders()
     pShaderCode = NULL;
 
     // Compile pixel shader
-    hr = D3DXCompileShader(g_PixelShaderProgram, (UINT)strlen(g_PixelShaderProgram), NULL, NULL, "main", "ps_2_0", 0, &pShaderCode, &pErrorMsg, NULL);
+    hr = D3DXCompileShader(g_PixelShaderProgram, strlen(g_PixelShaderProgram), NULL, NULL, "main", "ps_2_0", 0, &pShaderCode, &pErrorMsg, NULL);
     if (FAILED(hr))
     {
-        OutputDebugStringA(pErrorMsg ? (CHAR *)pErrorMsg->GetBufferPointer() : "");
+        OutputDebugStringA("Couldn't compile pixel shader.\n");
+        OutputDebugStringA(pErrorMsg ? (char *)pErrorMsg->GetBufferPointer() : "");
         return false;
     }
 

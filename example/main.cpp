@@ -48,17 +48,11 @@ bool InitImGui()
 
     // Setup platform backend
     if (!ImGui_ImplXbox360_Init())
-    {
-        OutputDebugStringA("Xbox360 Init failed\n");
         return false;
-    }
 
     // Setup renderer backend
     if (!ImGui_ImplDX9_Init(g_pd3dDevice))
-    {
-        OutputDebugStringA("DX9 Init failed\n");
         return false;
-    }
 
     return true;
 }
