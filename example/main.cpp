@@ -4,8 +4,8 @@
 #include "imgui_impl_xbox360.h"
 #include "imgui_impl_dx9.h"
 
-IDirect3D9 *g_pD3D = nullptr;
-IDirect3DDevice9 *g_pd3dDevice = nullptr;
+Direct3D *g_pD3D = nullptr;
+D3DDevice *g_pd3dDevice = nullptr;
 
 void CreateD3DDevice()
 {

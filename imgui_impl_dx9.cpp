@@ -6,10 +6,13 @@
 // DirectX data
 struct ImGui_ImplDX9_Data
 {
-    LPDIRECT3DDEVICE9 pd3dDevice;
-    LPDIRECT3DVERTEXBUFFER9 pVB;
-    LPDIRECT3DINDEXBUFFER9 pIB;
-    LPDIRECT3DTEXTURE9 FontTexture;
+    D3DDevice *pd3dDevice;
+    D3DVertexDeclaration *pVD;
+    D3DVertexBuffer *pVB;
+    D3DIndexBuffer *pIB;
+    D3DVertexShader *pVS;
+    D3DPixelShader *pPS;
+    D3DTexture *FontTexture;
     int VertexBufferSize;
     int IndexBufferSize;
 
@@ -35,50 +38,47 @@ struct CUSTOMVERTEX
 #endif
 
 const char *g_VertexShaderProgram =
-    " float4x4 matWVP : register(c0);                    "
-    "                                                    "
-    " struct VS_IN                                       "
-    " {                                                  "
-    "     float4 ObjPos   : POSITION;                    "
-    "     float4 Color    : COLOR;                       "
-    "     float2 UV       : TEXCOORD0;                   "
-    " };                                                 "
-    "                                                    "
-    " struct VS_OUT                                      "
-    " {                                                  "
-    "     float4 ProjPos  : POSITION;                    "
-    "     float4 Color    : COLOR;                       "
-    "     float2 UV       : TEXCOORD0;                   "
-    " };                                                 "
-    "                                                    "
-    " VS_OUT main( VS_IN In )                            "
-    " {                                                  "
-    "     VS_OUT Out;                                    "
-    "     Out.ProjPos = mul( matWVP, In.ObjPos );        "
-    "     Out.Color = In.Color;                          "
-    "     Out.UV = In.UV;                                "
-    "     return Out;                                    "
-    " }                                                  ";
+    "float4x4 matWVP : register(c0);"
+    ""
+    "struct VS_IN"
+    "{"
+    "    float4 ObjPos : POSITION;"
+    "    float4 Color : COLOR;"
+    "    float2 UV : TEXCOORD0;"
+    "};"
+    ""
+    "struct VS_OUT"
+    "{"
+    "    float4 ProjPos : POSITION;"
+    "    float4 Color : COLOR;"
+    "    float2 UV : TEXCOORD0;"
+    "};"
+    ""
+    "VS_OUT main(VS_IN In)"
+    "{"
+    "    VS_OUT Out;"
+    "    Out.ProjPos = mul(matWVP, In.ObjPos);"
+    "    Out.Color = In.Color;"
+    "    Out.UV = In.UV;"
+    "    return Out;"
+    "}";
 
 const char *g_PixelShaderProgram =
-    " struct PS_IN                                       "
-    " {                                                  "
-    "     float4 ProjPos  : POSITION;                    "
-    "     float4 Color    : COLOR;                       "
-    "     float2 UV       : TEXCOORD0;                   "
-    " };                                                 "
-    "                                                    "
-    "sampler TextureSampler  : register(s0);             "
-    "Texture2D Texture       : register(t0);             "
-    "                                                    "
-    " float4 main( PS_IN In ) : COLOR                    "
-    " {                                                  "
-    "     float4 TextureColor = Texture.Sample(TextureSampler, In.UV);"
-    "     return In.Color * TextureColor;                "
-    " }                                                  ";
-
-IDirect3DPixelShader9 *g_pPixelShader = nullptr;
-IDirect3DVertexShader9 *g_pVertexShader = nullptr;
+    "struct PS_IN"
+    "{"
+    "    float4 ProjPos : POSITION;"
+    "    float4 Color : COLOR;"
+    "    float2 UV : TEXCOORD0;"
+    "};"
+    ""
+    "sampler TextureSampler : register(s0);"
+    "Texture2D Texture : register(t0);"
+    ""
+    "float4 main(PS_IN In) : COLOR"
+    "{"
+    "    float4 TextureColor = Texture.Sample(TextureSampler, In.UV);"
+    "    return In.Color * TextureColor;"
+    "}";
 
 static ImGui_ImplDX9_Data *ImGui_ImplDX9_GetBackendData()
 {
@@ -93,7 +93,7 @@ static bool ImGui_ImplDX9_LoadShaders()
     ID3DXBuffer *pShaderCode = NULL;
     ID3DXBuffer *pErrorMsg = NULL;
 
-    // Compile vertex shader.
+    // Compile vertex shader
     HRESULT hr = D3DXCompileShader(g_VertexShaderProgram, (UINT)strlen(g_VertexShaderProgram), NULL, NULL, "main", "vs_2_0", 0, &pShaderCode, &pErrorMsg, NULL);
     if (FAILED(hr))
     {
@@ -101,14 +101,14 @@ static bool ImGui_ImplDX9_LoadShaders()
         return false;
     }
 
-    // Create vertex shader.
-    bd->pd3dDevice->CreateVertexShader((DWORD *)pShaderCode->GetBufferPointer(), &g_pVertexShader);
+    // Create vertex shader
+    bd->pd3dDevice->CreateVertexShader((DWORD *)pShaderCode->GetBufferPointer(), &bd->pVS);
 
-    // Shader code is no longer required.
+    // Shader code is no longer required
     pShaderCode->Release();
     pShaderCode = NULL;
 
-    // Compile pixel shader.
+    // Compile pixel shader
     hr = D3DXCompileShader(g_PixelShaderProgram, (UINT)strlen(g_PixelShaderProgram), NULL, NULL, "main", "ps_2_0", 0, &pShaderCode, &pErrorMsg, NULL);
     if (FAILED(hr))
     {
@@ -116,8 +116,8 @@ static bool ImGui_ImplDX9_LoadShaders()
         return false;
     }
 
-    // Create pixel shader.
-    bd->pd3dDevice->CreatePixelShader((DWORD *)pShaderCode->GetBufferPointer(), &g_pPixelShader);
+    // Create pixel shader
+    bd->pd3dDevice->CreatePixelShader((DWORD *)pShaderCode->GetBufferPointer(), &bd->pPS);
 
     // Shader code no longer required.
     pShaderCode->Release();
@@ -126,13 +126,11 @@ static bool ImGui_ImplDX9_LoadShaders()
     return true;
 }
 
-IDirect3DVertexDeclaration9 *g_pVertexDecl = nullptr;
-
 static bool ImGui_ImplDX9_CreateVertexElements()
 {
     ImGui_ImplDX9_Data *bd = ImGui_ImplDX9_GetBackendData();
 
-    // Define the vertex elements.
+    // Define the vertex elements
     static const D3DVERTEXELEMENT9 VertexElements[] = {
         { 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
         { 0, sizeof(float) * 3, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 },
@@ -140,8 +138,8 @@ static bool ImGui_ImplDX9_CreateVertexElements()
         D3DDECL_END()
     };
 
-    // Create a vertex declaration from the element descriptions.
-    bd->pd3dDevice->CreateVertexDeclaration(VertexElements, &g_pVertexDecl);
+    // Create a vertex declaration from the element descriptions
+    bd->pd3dDevice->CreateVertexDeclaration(VertexElements, &bd->pVD);
 
     return true;
 }
@@ -236,15 +234,6 @@ static void ImGui_ImplDX9_SetupRenderState(ImDrawData *draw_data)
 {
     ImGui_ImplDX9_Data *bd = ImGui_ImplDX9_GetBackendData();
 
-    // Setup viewport
-    D3DVIEWPORT9 vp;
-    vp.X = vp.Y = 0;
-    vp.Width = (DWORD)draw_data->DisplaySize.x;
-    vp.Height = (DWORD)draw_data->DisplaySize.y;
-    vp.MinZ = 0.0f;
-    vp.MaxZ = 1.0f;
-    bd->pd3dDevice->SetViewport(&vp);
-
     // Setup render state: alpha-blending, no face culling, no depth testing
     bd->pd3dDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
     bd->pd3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
@@ -267,18 +256,18 @@ static void ImGui_ImplDX9_SetupRenderState(ImDrawData *draw_data)
     float R = draw_data->DisplayPos.x + draw_data->DisplaySize.x + 0.5f;
     float T = draw_data->DisplayPos.y + 0.5f;
     float B = draw_data->DisplayPos.y + draw_data->DisplaySize.y + 0.5f;
-    XMMATRIX matWorld = XMMatrixIdentity();
-    XMMATRIX matView = XMMatrixIdentity();
-    XMMATRIX matProj = XMMatrixOrthographicOffCenterLH(L, R, B, T, -1.0f, 1.0f);
-    XMMATRIX matWVP = matWorld * matView * matProj;
+    XMMATRIX mat_world = XMMatrixIdentity();
+    XMMATRIX mat_view = XMMatrixIdentity();
+    XMMATRIX mat_proj = XMMatrixOrthographicOffCenterLH(L, R, B, T, -1.0f, 1.0f);
+    XMMATRIX mat_wvp = mat_world * mat_view * mat_proj;
 
-    bd->pd3dDevice->SetVertexShader(g_pVertexShader);
-    bd->pd3dDevice->SetPixelShader(g_pPixelShader);
-    bd->pd3dDevice->SetVertexShaderConstantF(0, (FLOAT *)&matWVP, 4);
-    bd->pd3dDevice->SetVertexDeclaration(g_pVertexDecl);
+    bd->pd3dDevice->SetVertexShader(bd->pVS);
+    bd->pd3dDevice->SetPixelShader(bd->pPS);
+    bd->pd3dDevice->SetVertexShaderConstantF(0, (float *)&mat_wvp, 4);
+    bd->pd3dDevice->SetVertexDeclaration(bd->pVD);
 }
 
-// Render function.
+// Render function
 void ImGui_ImplDX9_RenderDrawData(ImDrawData *draw_data)
 {
     // Avoid rendering when minimized
