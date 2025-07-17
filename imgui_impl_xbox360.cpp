@@ -92,7 +92,8 @@ void ImGui_ImplXbox360_NewFrame()
     ImGui_ImplXbox360_Data *bd = ImGui_ImplXbox360_GetBackendData();
     IM_ASSERT(bd != NULL && "Did you call ImGui_ImplXbox360_Init()?");
 
-    // Setup display size
+    // Definition is always 720p on Xbox 360, other definitions are created by the
+    // hardware scaler
     io.DisplaySize = ImVec2(1280.0f, 720.0f);
 
     // Setup time step
