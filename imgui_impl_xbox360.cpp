@@ -7,8 +7,6 @@ struct ImGui_ImplXbox360_Data
 {
     INT64 Time;
     INT64 TicksPerSecond;
-    bool HasGamepad;
-    bool WantUpdateHasGamepad;
 
     ImGui_ImplXbox360_Data() { memset(this, 0, sizeof(*this)); }
 };
@@ -34,7 +32,6 @@ bool ImGui_ImplXbox360_Init()
     io.BackendPlatformUserData = (void *)bd;
     io.BackendPlatformName = "imgui_impl_xbox360";
 
-    bd->WantUpdateHasGamepad = true;
     bd->TicksPerSecond = perf_frequency;
     bd->Time = perf_counter;
 
@@ -45,23 +42,13 @@ bool ImGui_ImplXbox360_Init()
 static void ImGui_ImplXbox360_UpdateGamepads()
 {
     ImGuiIO &io = ImGui::GetIO();
-    ImGui_ImplXbox360_Data *bd = ImGui_ImplXbox360_GetBackendData();
     memset(io.NavInputs, 0, sizeof(io.NavInputs));
     if ((io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) == 0)
         return;
 
-    // Calling XInputGetState() every frame on disconnected gamepads is unfortunately too slow.
-    // Instead we refresh gamepad availability by calling XInputGetCapabilities() _only_ after receiving WM_DEVICECHANGE.
-    if (bd->WantUpdateHasGamepad)
-    {
-        XINPUT_CAPABILITIES caps;
-        bd->HasGamepad = XInputGetCapabilities(0, XINPUT_FLAG_GAMEPAD, &caps) == ERROR_SUCCESS;
-        bd->WantUpdateHasGamepad = false;
-    }
-
     io.BackendFlags &= ~ImGuiBackendFlags_HasGamepad;
     XINPUT_STATE xinput_state;
-    if (bd->HasGamepad && XInputGetState(0, &xinput_state) == ERROR_SUCCESS)
+    if (XInputGetState(0, &xinput_state) == ERROR_SUCCESS)
     {
         const XINPUT_GAMEPAD &gamepad = xinput_state.Gamepad;
         io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
