@@ -22,7 +22,7 @@ Simply copy [`imgui_impl_dx9.h`](./imgui_impl_dx9.h), [`imgui_impl_dx9.cpp`](./i
 -   The mouse related functions were not ported to Xbox 360 because it doesn't support mice.
 -   The `ImGui_ImplWin32_WndProcHandler` wasn't ported because the Xbox 360 has no concept of windows.
 -   The logic for dynamically loading the XInput DLL was removed because XInput is implemented in the `xam.xex` module, which is always loaded on the system.
--   The keyboard mapping was removed. While the Xbox 360 technically supports keyboards, their use is not that common so the mapping was left out, at least for now.
+-   Since the Xbox 360 doesn't have a `WndProcHandler`, keyboard events are handled just like the gamepad, by checking the keyboard state every frame.
 -   The shutdown logic was removed because it was just unloading the XInput DLL, which this backend doesn't load.
 -   Because the Xbox 360 doesn't have windows, `ImGuiIO::DisplaySize` was hard-coded to the display definition of the system, which is always 720p (other definitions are created by the hardware scaler).
 

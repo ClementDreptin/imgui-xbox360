@@ -35,10 +35,33 @@ bool ImGui_ImplXbox360_Init()
     bd->TicksPerSecond = perf_frequency;
     bd->Time = perf_counter;
 
+    // Keyboard mapping. Dear ImGui will use those indices to peek into the io.KeysDown[] array that we will update during the application lifetime.
+    io.KeyMap[ImGuiKey_Tab] = VK_TAB;
+    io.KeyMap[ImGuiKey_LeftArrow] = VK_LEFT;
+    io.KeyMap[ImGuiKey_RightArrow] = VK_RIGHT;
+    io.KeyMap[ImGuiKey_UpArrow] = VK_UP;
+    io.KeyMap[ImGuiKey_DownArrow] = VK_DOWN;
+    io.KeyMap[ImGuiKey_PageUp] = VK_PRIOR;
+    io.KeyMap[ImGuiKey_PageDown] = VK_NEXT;
+    io.KeyMap[ImGuiKey_Home] = VK_HOME;
+    io.KeyMap[ImGuiKey_End] = VK_END;
+    io.KeyMap[ImGuiKey_Insert] = VK_INSERT;
+    io.KeyMap[ImGuiKey_Delete] = VK_DELETE;
+    io.KeyMap[ImGuiKey_Backspace] = VK_BACK;
+    io.KeyMap[ImGuiKey_Space] = VK_SPACE;
+    io.KeyMap[ImGuiKey_Enter] = VK_RETURN;
+    io.KeyMap[ImGuiKey_Escape] = VK_ESCAPE;
+    io.KeyMap[ImGuiKey_KeyPadEnter] = VK_RETURN;
+    io.KeyMap[ImGuiKey_A] = 'A';
+    io.KeyMap[ImGuiKey_C] = 'C';
+    io.KeyMap[ImGuiKey_V] = 'V';
+    io.KeyMap[ImGuiKey_X] = 'X';
+    io.KeyMap[ImGuiKey_Y] = 'Y';
+    io.KeyMap[ImGuiKey_Z] = 'Z';
+
     return true;
 }
 
-// Gamepad navigation mapping
 static void ImGui_ImplXbox360_UpdateGamepads()
 {
     ImGuiIO &io = ImGui::GetIO();
@@ -86,6 +109,31 @@ static void ImGui_ImplXbox360_UpdateGamepads()
     }
 }
 
+static void ImGui_ImplXbox360_UpdateKeyboard()
+{
+    ImGuiIO &io = ImGui::GetIO();
+
+    // Get the keyboard state
+    XINPUT_KEYSTROKE keystroke = {};
+    DWORD result = XInputGetKeystroke(XUSER_INDEX_ANY, XINPUT_FLAG_KEYBOARD, &keystroke);
+    if (result != ERROR_SUCCESS)
+        return;
+
+    // Copy the key state into io.KeysDown
+    bool down = keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN;
+    if (keystroke.VirtualKey < 256)
+        io.KeysDown[keystroke.VirtualKey] = down;
+
+    // Modifiers
+    io.KeyCtrl = (keystroke.Flags & XINPUT_KEYSTROKE_CTRL) != 0;
+    io.KeyShift = (keystroke.Flags & XINPUT_KEYSTROKE_SHIFT) != 0;
+    io.KeyAlt = (keystroke.Flags & XINPUT_KEYSTROKE_ALT) != 0;
+
+    // If the current key is a character, add it for the text inputs
+    if (keystroke.Flags & XINPUT_KEYSTROKE_VALIDUNICODE)
+        io.AddInputCharacterUTF16(keystroke.Unicode);
+}
+
 void ImGui_ImplXbox360_NewFrame()
 {
     ImGuiIO &io = ImGui::GetIO();
@@ -104,4 +152,7 @@ void ImGui_ImplXbox360_NewFrame()
 
     // Update game controllers (if enabled and available)
     ImGui_ImplXbox360_UpdateGamepads();
+
+    // Update the keyboard (if enabled and available)
+    ImGui_ImplXbox360_UpdateKeyboard();
 }
