@@ -20,9 +20,7 @@ void CreateD3DDevice()
     d3dpp.BackBufferWidth = 1280;
     d3dpp.BackBufferHeight = 720;
 
-    // Make sure the gamma is correct
-    d3dpp.BackBufferFormat = (D3DFORMAT)MAKESRGBFMT(D3DFMT_A8R8G8B8);
-    d3dpp.FrontBufferFormat = (D3DFORMAT)MAKESRGBFMT(D3DFMT_LE_X8R8G8B8);
+    d3dpp.BackBufferFormat = D3DFMT_A8R8G8B8;
 
     // Depth stencil
     d3dpp.EnableAutoDepthStencil = TRUE;
