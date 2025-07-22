@@ -2,6 +2,8 @@
 
 Custom Dear ImGui backends for the Xbox 360.
 
+<p align="center"><img src="./resources/screenshots/example.jpg" alt="Dear ImGui demo window" /></p>
+
 > [!WARNING]
 > These backends only support Dear ImGui up to [v1.86](https://github.com/ocornut/imgui/tree/v1.86), this is because v1.87 [removed support for pre C++11 compiler and VS2010](https://github.com/ocornut/imgui/releases/tag/v1.87).
 
@@ -26,7 +28,7 @@ Simply copy [`imgui_impl_dx9.h`](./imgui_impl_dx9.h), [`imgui_impl_dx9.cpp`](./i
 -   The shutdown logic was removed because it was just unloading the XInput DLL, which this backend doesn't load.
 -   Because the Xbox 360 doesn't have windows, `ImGuiIO::DisplaySize` was hard-coded to the display definition of the system, which is always 720p (other definitions are created by the hardware scaler).
 
-### DirectX 9 for Xbox 360 compared to DirectX9 for Win32
+### DirectX 9 for Xbox 360 compared to DirectX 9 for Win32
 
 -   The biggest difference is that the standard backend uses the fixed-function pipeline, which isn't supported on Xbox 360. It means this backend uses a vertex shader and a pixel shader instead.
 -   No need to set a `D3DVIEWPORT9` on the `D3DDevice` because the Xbox 360 doesn't have windows, so the viewport is always the whole screen.
