@@ -15,7 +15,7 @@
     <Keyword>Xbox360Proj</Keyword>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>2010-01</PlatformToolset>
   </PropertyGroup>
@@ -29,7 +29,7 @@
     <IntDir>$(SolutionDir)build\$(Configuration)\obj\</IntDir>
     <RemoteRoot>hdd:\$(ProjectName)</RemoteRoot>
     <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-    <ImageXexOutput>$(OutDir)default.xex</ImageXexOutput>
+    <ImageXexOutput>$(OutDir)$(ProjectName).xex</ImageXexOutput>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ItemDefinitionGroup>
@@ -40,6 +40,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ObjectFileName>$(IntDir)$(ProjectName)\%(RelativeDir)</ObjectFileName>
       <DisableSpecificWarnings>4127</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DebugInformationFormat Condition="'$(Configuration)'=='Debug'">ProgramDatabase</DebugInformationFormat>
       <Optimization Condition="'$(Configuration)'=='Debug'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)'=='Release'">Full</Optimization>
@@ -47,26 +48,22 @@
       <StringPooling Condition="'$(Configuration)'=='Release'">true</StringPooling>
       <IntrinsicFunctions Condition="'$(Configuration)'=='Release'">true</IntrinsicFunctions>
       <FavorSizeOrSpeed Condition="'$(Configuration)'=='Release'">Size</FavorSizeOrSpeed>
-      <RuntimeLibrary Condition="'$(Configuration)'=='Debug'">MultiThreadedDebug</RuntimeLibrary>
-      <RuntimeLibrary Condition="'$(Configuration)'=='Release'">MultiThreaded</RuntimeLibrary>
-      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;_XBOX;IMGUI_DISABLE_WIN32_FUNCTIONS</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_XBOX;IMGUI_DISABLE_WIN32_FUNCTIONS</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Release'">NDEBUG;_XBOX;IMGUI_DISABLE_WIN32_FUNCTIONS</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">xapilibd.lib;d3d9d.lib;d3dx9d.lib;xgraphicsd.lib</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Configuration)'=='Release'">xapilib.lib;d3d9.lib;d3dx9.lib;xgraphics.lib</AdditionalDependencies>
       <GenerateDebugInformation Condition="'$(Configuration)'=='Debug'">true</GenerateDebugInformation>
       <ProgramDatabaseFile Condition="'$(Configuration)'=='Debug'">$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
       <OptimizeReferences Condition="'$(Configuration)'=='Release'">true</OptimizeReferences>
       <SetChecksum Condition="'$(Configuration)'=='Release'">true</SetChecksum>
+      <AdditionalOptions>/DLL /ENTRY:"_DllMainCRTStartup" /ALIGN:128,4096 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Deploy>
       <DeploymentType>CopyToHardDrive</DeploymentType>
     </Deploy>
-    <PostBuildEvent Condition="'$(Configuration)'=='Release'">
-      <Command>"$(XEDK)\bin\win32\xbreboot.exe" $(RemotePath)</Command>
-      <Message>Launch $(RemotePath) after it's built</Message>
-    </PostBuildEvent>
+    <ImageXex>
+      <ConfigurationFile>$(SolutionDir)config.xml</ConfigurationFile>
+    </ImageXex>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h" />
@@ -87,5 +84,19 @@
     <ClCompile Include="..\imgui_impl_dx9.cpp" />
     <ClCompile Include="..\imgui_impl_xbox360.cpp" />
     <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="VertexShader.hlsl">
+      <Command>fxc.exe "%(FullPath)" /nologo /Tvs_3_0 /Emain /Fo"$(OutDir)vertex.xvu"</Command>
+      <Message>Compile vertex shader in %(FullPath)</Message>
+      <Outputs>$(OutDir)vertex.xvu</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="PixelShader.hlsl">
+      <Command>fxc.exe "%(FullPath)" /nologo /Tps_3_0 /Emain /Fo"$(OutDir)pixel.xpu"</Command>
+      <Message>Compile pixel shader in %(FullPath)</Message>
+      <Outputs>$(OutDir)pixel.xvu</Outputs>
+    </CustomBuild>
   </ItemGroup>
 </Project>
