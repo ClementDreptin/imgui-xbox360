@@ -29,7 +29,7 @@
     <IntDir>$(SolutionDir)build\$(Configuration)\obj\</IntDir>
     <RemoteRoot>hdd:\$(ProjectName)</RemoteRoot>
     <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-    <ImageXexOutput>$(OutDir)$(ProjectName).xex</ImageXexOutput>
+    <ImageXexOutput>$(OutDir)MyPlugin.xex</ImageXexOutput>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ItemDefinitionGroup>
@@ -52,6 +52,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Release'">NDEBUG;_XBOX;IMGUI_DISABLE_WIN32_FUNCTIONS</PreprocessorDefinitions>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>d3d9.lib</AdditionalDependencies>
       <GenerateDebugInformation Condition="'$(Configuration)'=='Debug'">true</GenerateDebugInformation>
       <ProgramDatabaseFile Condition="'$(Configuration)'=='Debug'">$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
       <OptimizeReferences Condition="'$(Configuration)'=='Release'">true</OptimizeReferences>
