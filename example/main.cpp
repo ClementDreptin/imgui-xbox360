@@ -2,15 +2,14 @@
 #include <imgui.h>
 
 #include <cstdint>
-#include <string>
 
 #include "imgui_impl_xbox360.h"
 #include "imgui_impl_dx9.h"
 
 // Get the address of a function from a module by its ordinal
-void *ResolveFunction(const std::string &moduleName, uint32_t ordinal)
+void *ResolveFunction(const char *moduleName, uint32_t ordinal)
 {
-    HMODULE moduleHandle = GetModuleHandle(moduleName.c_str());
+    HMODULE moduleHandle = GetModuleHandle(moduleName);
     if (moduleHandle == nullptr)
         return nullptr;
 
@@ -44,6 +43,8 @@ extern "C"
     );
 
     bool MmIsAddressValid(void *pAddress);
+
+    void DbgPrint(const char *format, ...);
 }
 
 void InitMW2();
@@ -347,18 +348,17 @@ void Render()
     ImGui::EndFrame();
     ImGui::Render();
     ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-    // g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
 }
 
-Detour *pSCR_DrawScreenFieldDetour = nullptr;
+Detour *pGameRenderDetour = nullptr;
 
-void SCR_DrawScreenFieldHook(const int localClientNum, int refreshedUI)
+void GameRenderHook()
 {
-    // Calling the original SCR_DrawScreenField function
-    pSCR_DrawScreenFieldDetour->GetOriginal<decltype(&SCR_DrawScreenFieldHook)>()(localClientNum, refreshedUI);
-
     // Render ImGui
     Render();
+
+    // Calling the original ScrPlace_EndFrame function
+    pGameRenderDetour->GetOriginal<decltype(&GameRenderHook)>()();
 }
 
 // Sets up the hook
@@ -374,11 +374,12 @@ void InitMW2()
 
     XNotifyQueueUI(0, 0, XNOTIFY_SYSTEM, L"Alpha MW2", nullptr);
 
-    const uintptr_t SCR_DrawScreenFieldAddr = 0x8218B5F0;
+    // TODO: hooking this function doesn't work, we need a new one
+    const uintptr_t GameRenderAddr = 0x821A5688;
 
-    // Hooking SV_ExecuteClientCommand and SCR_DrawScreenField
-    pSCR_DrawScreenFieldDetour = new Detour(SCR_DrawScreenFieldAddr, SCR_DrawScreenFieldHook);
-    pSCR_DrawScreenFieldDetour->Install();
+    // Hooking ScrPlace_EndFrame
+    pGameRenderDetour = new Detour(GameRenderAddr, GameRenderHook);
+    pGameRenderDetour->Install();
 }
 
 HANDLE g_ThreadHandle = INVALID_HANDLE_VALUE;
@@ -394,8 +395,8 @@ BOOL DllMain(HINSTANCE hModule, DWORD reason, void *pReserved)
     case DLL_PROCESS_DETACH:
         g_Running = false;
 
-        if (pSCR_DrawScreenFieldDetour)
-            delete pSCR_DrawScreenFieldDetour;
+        if (pGameRenderDetour)
+            delete pGameRenderDetour;
 
         // Wait for the run thread to finish
         WaitForSingleObject(g_ThreadHandle, INFINITE);

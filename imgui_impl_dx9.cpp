@@ -40,33 +40,6 @@ struct CUSTOMVERTEX
     #define IMGUI_COL_TO_DX9_ARGB(_COL) (((_COL) & 0xFF00FF00) | (((_COL) & 0xFF0000) >> 16) | (((_COL) & 0xFF) << 16))
 #endif
 
-void *ResolveFunction(const std::string &moduleName, uint32_t ordinal);
-
-decltype(D3DDevice_CreateVertexShader) *pfnD3DDevice_CreateVertexShader = (decltype(D3DDevice_CreateVertexShader) *)0x820D7680;
-decltype(D3DDevice_CreatePixelShader) *pfnD3DDevice_CreatePixelShader = (decltype(D3DDevice_CreatePixelShader) *)0x820D72A0;
-decltype(D3DDevice_CreateVertexDeclaration) *pfnD3DDevice_CreateVertexDeclaration = (decltype(D3DDevice_CreateVertexDeclaration) *)0x820D7AB8;
-decltype(D3DDevice_CreateTexture) *pfnD3DDevice_CreateTexture = (decltype(D3DDevice_CreateTexture) *)0x820E8B28;
-decltype(D3DDevice_SetRenderState) *pfnD3DDevice_SetRenderState = (decltype(D3DDevice_SetRenderState) *)0x823F11A0;
-decltype(D3DDevice_SetSamplerState) *pfnD3DDevice_SetSamplerState = (decltype(D3DDevice_SetSamplerState) *)0x823F11B8;
-decltype(D3DDevice_SetVertexShader) *pfnD3DDevice_SetVertexShader = (decltype(D3DDevice_SetVertexShader) *)0x820D7770;
-decltype(D3DDevice_SetPixelShader) *pfnD3DDevice_SetPixelShader = (decltype(D3DDevice_SetPixelShader) *)0x820D7390;
-decltype(D3DDevice_SetVertexShaderConstantF) *pfnD3DDevice_SetVertexShaderConstantF = (decltype(D3DDevice_SetVertexShaderConstantF) *)0x823D19B8;
-decltype(D3DDevice_SetVertexDeclaration) *pfnD3DDevice_SetVertexDeclaration = (decltype(D3DDevice_SetVertexDeclaration) *)0x820D7978;
-decltype(D3DResource_Release) *pfnD3DResource_Release = (decltype(D3DResource_Release) *)0x820E5458;
-decltype(D3DDevice_SetStreamSource_Inline) *pfnD3DDevice_SetStreamSource_Inline = (decltype(D3DDevice_SetStreamSource_Inline) *)0x823D1930;
-decltype(D3DDevice_SetIndices) *pfnD3DDevice_SetIndices = (decltype(D3DDevice_SetIndices) *)0x820DD8D0;
-decltype(D3DDevice_SetTexture_Inline) *pfnD3DDevice_SetTexture_Inline = (decltype(D3DDevice_SetTexture_Inline) *)0x823EDA30;
-decltype(D3DDevice_SetScissorRect) *pfnD3DDevice_SetScissorRect = (decltype(D3DDevice_SetScissorRect) *)0x820DD5B0;
-decltype(D3DDevice_DrawIndexedVertices) *pfnD3DDevice_DrawIndexedVertices = (decltype(D3DDevice_DrawIndexedVertices) *)0x820E6C88;
-decltype(D3DTexture_LockRect) *pfnD3DTexture_LockRect = NULL;
-decltype(D3DTexture_UnlockRect) *pfnD3DTexture_UnlockRect = NULL;
-decltype(D3DDevice_CreateVertexBuffer) *pfnD3DDevice_CreateVertexBuffer = NULL;
-decltype(D3DDevice_CreateIndexBuffer) *pfnD3DDevice_CreateIndexBuffer = NULL;
-decltype(D3DVertexBuffer_Lock) *pfnD3DVertexBuffer_Lock = NULL;
-decltype(D3DIndexBuffer_Lock) *pfnD3DIndexBuffer_Lock = NULL;
-decltype(D3DVertexBuffer_Unlock) *pfnD3DVertexBuffer_Unlock = NULL;
-decltype(D3DIndexBuffer_Unlock) *pfnD3DIndexBuffer_Unlock = NULL;
-
 static void *LoadShaderCode(const char *shaderFileName)
 {
     // Open the file for reading
@@ -117,7 +90,7 @@ static bool ImGui_ImplDX9_LoadShaders()
     }
 
     // Create vertex shader
-    bd->pVS = pfnD3DDevice_CreateVertexShader((DWORD *)pVertexShaderCode);
+    bd->pd3dDevice->CreateVertexShader((DWORD *)pVertexShaderCode, &bd->pVS);
     ImGui::MemFree(pVertexShaderCode);
 
     // Load the pixel shader code
@@ -129,7 +102,7 @@ static bool ImGui_ImplDX9_LoadShaders()
     }
 
     // Create pixel shader
-    bd->pPS = pfnD3DDevice_CreatePixelShader((DWORD *)pPixelShaderCode);
+    bd->pd3dDevice->CreatePixelShader((DWORD *)pVertexShaderCode, &bd->pPS);
     ImGui::MemFree(pPixelShaderCode);
 
     return true;
@@ -148,7 +121,7 @@ static bool ImGui_ImplDX9_CreateVertexElements()
     };
 
     // Create a vertex declaration from the element descriptions
-    bd->pVD = pfnD3DDevice_CreateVertexDeclaration(VertexElements);
+    bd->pd3dDevice->CreateVertexDeclaration(VertexElements, &bd->pVD);
 
     return true;
 }
@@ -165,16 +138,7 @@ bool ImGui_ImplDX9_Init(IDirect3DDevice9 *device)
     io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset; // We can honor the ImDrawCmd::VtxOffset field, allowing for large meshes.
 
     bd->pd3dDevice = device;
-    // bd->pd3dDevice->AddRef();
-
-    pfnD3DTexture_LockRect = (decltype(pfnD3DTexture_LockRect))ResolveFunction("xam.xex", 2211);
-    pfnD3DTexture_UnlockRect = (decltype(pfnD3DTexture_UnlockRect))ResolveFunction("xam.xex", 2210);
-    pfnD3DDevice_CreateVertexBuffer = (decltype(pfnD3DDevice_CreateVertexBuffer))ResolveFunction("xam.xex", 2203);
-    pfnD3DDevice_CreateIndexBuffer = (decltype(pfnD3DDevice_CreateIndexBuffer))ResolveFunction("xam.xex", 2204);
-    pfnD3DVertexBuffer_Lock = (decltype(pfnD3DVertexBuffer_Lock))ResolveFunction("xam.xex", 2207);
-    pfnD3DIndexBuffer_Lock = (decltype(pfnD3DIndexBuffer_Lock))ResolveFunction("xam.xex", 2209);
-    pfnD3DVertexBuffer_Unlock = (decltype(pfnD3DVertexBuffer_Unlock))ResolveFunction("xam.xex", 2206);
-    pfnD3DIndexBuffer_Unlock = (decltype(pfnD3DIndexBuffer_Unlock))ResolveFunction("xam.xex", 2208);
+    bd->pd3dDevice->AddRef();
 
     // Load shaders
     if (!ImGui_ImplDX9_LoadShaders())
@@ -209,14 +173,14 @@ static bool ImGui_ImplDX9_CreateFontsTexture()
 
     // Upload texture to graphics system
     bd->FontTexture = NULL;
-    bd->FontTexture = (D3DTexture *)pfnD3DDevice_CreateTexture(width, height, 1, 1, 0, D3DFMT_LIN_A8R8G8B8, D3DPOOL_DEFAULT, D3DRTYPE_TEXTURE);
-    if (bd->FontTexture == NULL)
+    if (bd->pd3dDevice->CreateTexture(width, height, 1, 0, D3DFMT_LIN_A8R8G8B8, D3DPOOL_DEFAULT, &bd->FontTexture, NULL) < 0)
         return false;
     D3DLOCKED_RECT tex_locked_rect;
-    pfnD3DTexture_LockRect(bd->FontTexture, 0, &tex_locked_rect, NULL, 0);
+    if (bd->FontTexture->LockRect(0, &tex_locked_rect, NULL, 0) != D3D_OK)
+        return false;
     for (int y = 0; y < height; y++)
         memcpy((unsigned char *)tex_locked_rect.pBits + (size_t)tex_locked_rect.Pitch * y, pixels + (size_t)width * bytes_per_pixel * y, (size_t)width * bytes_per_pixel);
-    pfnD3DTexture_UnlockRect(bd->FontTexture, 0);
+    bd->FontTexture->UnlockRect(0);
 
     // Store our identifier
     io.Fonts->SetTexID((ImTextureID)bd->FontTexture);
@@ -253,22 +217,22 @@ static void ImGui_ImplDX9_SetupRenderState(ImDrawData *draw_data)
     ImGui_ImplDX9_Data *bd = ImGui_ImplDX9_GetBackendData();
 
     // Setup render state: alpha-blending, no face culling, no depth testing
-    pfnD3DDevice_SetRenderState(bd->pd3dDevice, D3DRS_FILLMODE, D3DFILL_SOLID);
-    pfnD3DDevice_SetRenderState(bd->pd3dDevice, D3DRS_ZWRITEENABLE, FALSE);
-    pfnD3DDevice_SetRenderState(bd->pd3dDevice, D3DRS_ALPHATESTENABLE, FALSE);
-    pfnD3DDevice_SetRenderState(bd->pd3dDevice, D3DRS_CULLMODE, D3DCULL_NONE);
-    pfnD3DDevice_SetRenderState(bd->pd3dDevice, D3DRS_ZENABLE, FALSE);
-    pfnD3DDevice_SetRenderState(bd->pd3dDevice, D3DRS_ALPHABLENDENABLE, TRUE);
-    pfnD3DDevice_SetRenderState(bd->pd3dDevice, D3DRS_BLENDOP, D3DBLENDOP_ADD);
-    pfnD3DDevice_SetRenderState(bd->pd3dDevice, D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-    pfnD3DDevice_SetRenderState(bd->pd3dDevice, D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-    pfnD3DDevice_SetRenderState(bd->pd3dDevice, D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
-    pfnD3DDevice_SetRenderState(bd->pd3dDevice, D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
-    pfnD3DDevice_SetRenderState(bd->pd3dDevice, D3DRS_DESTBLENDALPHA, D3DBLEND_INVSRCALPHA);
-    pfnD3DDevice_SetRenderState(bd->pd3dDevice, D3DRS_SCISSORTESTENABLE, TRUE);
-    pfnD3DDevice_SetRenderState(bd->pd3dDevice, D3DRS_STENCILENABLE, FALSE);
-    pfnD3DDevice_SetSamplerState(bd->pd3dDevice, 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-    pfnD3DDevice_SetSamplerState(bd->pd3dDevice, 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+    bd->pd3dDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+    bd->pd3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+    bd->pd3dDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+    bd->pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+    bd->pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
+    bd->pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+    bd->pd3dDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+    bd->pd3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+    bd->pd3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+    bd->pd3dDevice->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
+    bd->pd3dDevice->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
+    bd->pd3dDevice->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_INVSRCALPHA);
+    bd->pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
+    bd->pd3dDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+    bd->pd3dDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+    bd->pd3dDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
 
     float L = draw_data->DisplayPos.x + 0.5f;
     float R = draw_data->DisplayPos.x + draw_data->DisplaySize.x + 0.5f;
@@ -279,10 +243,10 @@ static void ImGui_ImplDX9_SetupRenderState(ImDrawData *draw_data)
     XMMATRIX mat_proj = XMMatrixOrthographicOffCenterLH(L, R, B, T, -1.0f, 1.0f);
     XMMATRIX mat_wvp = mat_world * mat_view * mat_proj;
 
-    pfnD3DDevice_SetVertexShader(bd->pd3dDevice, bd->pVS);
-    pfnD3DDevice_SetPixelShader(bd->pd3dDevice, bd->pPS);
-    pfnD3DDevice_SetVertexShaderConstantF(bd->pd3dDevice, 0, (float *)&mat_wvp, 4);
-    pfnD3DDevice_SetVertexDeclaration(bd->pd3dDevice, bd->pVD);
+    bd->pd3dDevice->SetVertexShader(bd->pVS);
+    bd->pd3dDevice->SetPixelShader(bd->pPS);
+    bd->pd3dDevice->SetVertexShaderConstantF(0, (float *)&mat_wvp, 4);
+    bd->pd3dDevice->SetVertexDeclaration(bd->pVD);
 }
 
 // Render function
@@ -294,36 +258,31 @@ void ImGui_ImplDX9_RenderDrawData(ImDrawData *draw_data)
     {
         if (bd->pVB)
         {
-            pfnD3DResource_Release(bd->pVB);
+            bd->pVB->Release();
             bd->pVB = NULL;
         }
         bd->VertexBufferSize = draw_data->TotalVtxCount + 5000;
-        bd->pVB = pfnD3DDevice_CreateVertexBuffer(bd->VertexBufferSize * sizeof(CUSTOMVERTEX), D3DUSAGE_WRITEONLY, D3DPOOL_DEFAULT);
-        if (bd->pVB == NULL)
+        if (bd->pd3dDevice->CreateVertexBuffer(bd->VertexBufferSize * sizeof(CUSTOMVERTEX), D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &bd->pVB, NULL) < 0)
             return;
     }
     if (!bd->pIB || bd->IndexBufferSize < draw_data->TotalIdxCount)
     {
         if (bd->pIB)
         {
-            pfnD3DResource_Release(bd->pIB);
+            bd->pIB->Release();
             bd->pIB = NULL;
         }
         bd->IndexBufferSize = draw_data->TotalIdxCount + 10000;
-        bd->pIB = pfnD3DDevice_CreateIndexBuffer(bd->IndexBufferSize * sizeof(ImDrawIdx), D3DUSAGE_WRITEONLY, sizeof(ImDrawIdx) == 2 ? D3DFMT_INDEX16 : D3DFMT_INDEX32, D3DPOOL_DEFAULT);
-        if (bd->pIB == NULL)
+        if (bd->pd3dDevice->CreateIndexBuffer(bd->IndexBufferSize * sizeof(ImDrawIdx), D3DUSAGE_WRITEONLY, sizeof(ImDrawIdx) == 2 ? D3DFMT_INDEX16 : D3DFMT_INDEX32, D3DPOOL_DEFAULT, &bd->pIB, NULL) < 0)
             return;
     }
 
     // Backup the DX9 state
     IDirect3DStateBlock9 *d3d9_state_block = NULL;
-    // TODO:
     if (bd->pd3dDevice->CreateStateBlock(D3DSBT_ALL, &d3d9_state_block) < 0)
         return;
-    // TODO:
     if (d3d9_state_block->Capture() < 0)
     {
-        // TODO:
         d3d9_state_block->Release();
         return;
     }
@@ -331,18 +290,14 @@ void ImGui_ImplDX9_RenderDrawData(ImDrawData *draw_data)
     // Allocate buffers
     CUSTOMVERTEX *vtx_dst;
     ImDrawIdx *idx_dst;
-    vtx_dst = (CUSTOMVERTEX *)pfnD3DVertexBuffer_Lock(bd->pVB, 0, (UINT)(draw_data->TotalVtxCount * sizeof(CUSTOMVERTEX)), 0);
-    if (vtx_dst == NULL)
+    if (bd->pVB->Lock(0, (UINT)(draw_data->TotalVtxCount * sizeof(CUSTOMVERTEX)), (void **)&vtx_dst, 0) < 0)
     {
-        // TODO:
         d3d9_state_block->Release();
         return;
     }
-    idx_dst = (ImDrawIdx *)pfnD3DIndexBuffer_Lock(bd->pIB, 0, (UINT)(draw_data->TotalIdxCount * sizeof(ImDrawIdx)), 0);
-    if (idx_dst == NULL)
+    if (bd->pIB->Lock(0, (UINT)(draw_data->TotalIdxCount * sizeof(ImDrawIdx)), (void **)&idx_dst, 0) < 0)
     {
-        pfnD3DVertexBuffer_Unlock(bd->pVB);
-        // TODO:
+        bd->pVB->Unlock();
         d3d9_state_block->Release();
         return;
     }
@@ -369,10 +324,10 @@ void ImGui_ImplDX9_RenderDrawData(ImDrawData *draw_data)
         memcpy(idx_dst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
         idx_dst += cmd_list->IdxBuffer.Size;
     }
-    pfnD3DVertexBuffer_Unlock(bd->pVB);
-    pfnD3DIndexBuffer_Unlock(bd->pIB);
-    pfnD3DDevice_SetStreamSource_Inline(bd->pd3dDevice, 0, bd->pVB, 0, sizeof(CUSTOMVERTEX));
-    pfnD3DDevice_SetIndices(bd->pd3dDevice, bd->pIB);
+    bd->pVB->Unlock();
+    bd->pIB->Unlock();
+    bd->pd3dDevice->SetStreamSource(0, bd->pVB, 0, sizeof(CUSTOMVERTEX));
+    bd->pd3dDevice->SetIndices(bd->pIB);
 
     // Setup desired DX state
     ImGui_ImplDX9_SetupRenderState(draw_data);
@@ -408,9 +363,9 @@ void ImGui_ImplDX9_RenderDrawData(ImDrawData *draw_data)
                 // Apply Scissor/clipping rectangle, Bind texture, Draw
                 const RECT r = { (LONG)clip_min.x, (LONG)clip_min.y, (LONG)clip_max.x, (LONG)clip_max.y };
                 const LPDIRECT3DTEXTURE9 texture = (LPDIRECT3DTEXTURE9)pcmd->GetTexID();
-                pfnD3DDevice_SetTexture_Inline(bd->pd3dDevice, 0, texture);
-                pfnD3DDevice_SetScissorRect(bd->pd3dDevice, &r);
-                pfnD3DDevice_DrawIndexedVertices(bd->pd3dDevice, D3DPT_TRIANGLELIST, pcmd->VtxOffset + global_vtx_offset, pcmd->IdxOffset + global_idx_offset, pcmd->ElemCount / 3);
+                bd->pd3dDevice->SetTexture(0, texture);
+                bd->pd3dDevice->SetScissorRect(&r);
+                bd->pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, pcmd->VtxOffset + global_vtx_offset, 0, (UINT)cmd_list->VtxBuffer.Size, pcmd->IdxOffset + global_idx_offset, pcmd->ElemCount / 3);
             }
         }
         global_idx_offset += cmd_list->IdxBuffer.Size;
@@ -418,7 +373,6 @@ void ImGui_ImplDX9_RenderDrawData(ImDrawData *draw_data)
     }
 
     // Restore the DX9 state
-    // TODO:
     d3d9_state_block->Apply();
     d3d9_state_block->Release();
 }
