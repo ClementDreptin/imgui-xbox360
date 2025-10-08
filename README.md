@@ -35,6 +35,7 @@ Simply copy [`imgui_impl_dx9.h`](./imgui_impl_dx9.h), [`imgui_impl_dx9.cpp`](./i
 -   When calling `CreateVertexBuffer` and `CreateIndexBuffer`, `D3DUSAGE_DYNAMIC` was removed because it isn't supported on Xbox 360.
 -   FVF vertex buffers aren't supported so this backend uses a `D3DVertexDeclaration` instead.
 -   The font texture has the `D3DFMT_LIN_A8R8G8B8` format, which doesn't exist on Windows. This is because, by default, texture data is stored following a tiled layout on Xbox 360. Using the `_LIN_` variant allows you to write texture data linearly, the same way you would on Windows.
+-   `D3DVertexBuffer::Lock` and `D3DIndexBuffer::Lock` don't actually lock the buffers on Xbox 360. These functions are still implemented but purely for portability with Windows. When linking against `d3d9d.lib` in debug mode, a breakpoint is triggered if anything other than `0` is passed to the `OffsetToLock` and `SizeToLock` arguments of these functions.
 -   The shutdown logic was removed because only one user process can run at a time, and the DirectX resources are automatically cleaned up by the system when switching games.
 
 ### Main setup and rendering

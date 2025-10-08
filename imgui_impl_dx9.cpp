@@ -310,12 +310,14 @@ void ImGui_ImplDX9_RenderDrawData(ImDrawData *draw_data)
     // Allocate buffers
     CUSTOMVERTEX *vtx_dst;
     ImDrawIdx *idx_dst;
-    if (bd->pVB->Lock(0, (UINT)(draw_data->TotalVtxCount * sizeof(CUSTOMVERTEX)), (void **)&vtx_dst, 0) < 0)
+
+    // Check the README to know why the SizeToLock argument is 0
+    if (bd->pVB->Lock(0, 0, (void **)&vtx_dst, 0) < 0)
     {
         d3d9_state_block->Release();
         return;
     }
-    if (bd->pIB->Lock(0, (UINT)(draw_data->TotalIdxCount * sizeof(ImDrawIdx)), (void **)&idx_dst, 0) < 0)
+    if (bd->pIB->Lock(0, 0, (void **)&idx_dst, 0) < 0)
     {
         bd->pVB->Unlock();
         d3d9_state_block->Release();
