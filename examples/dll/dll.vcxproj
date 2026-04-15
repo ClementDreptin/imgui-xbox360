@@ -11,11 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{847D1361-E6C3-4E2B-A8F8-2122973679F8}</ProjectGuid>
+    <ProjectGuid>{9B1700C7-D20C-4489-A47E-60D639F18F89}</ProjectGuid>
     <Keyword>Xbox360Proj</Keyword>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>2010-01</PlatformToolset>
   </PropertyGroup>
@@ -27,62 +27,63 @@
   <PropertyGroup>
     <OutDir>$(SolutionDir)build\$(Configuration)\bin\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\obj\</IntDir>
+    <RemoteRoot>xE:\imgui-xbox360</RemoteRoot>
     <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     <ImageXexOutput>$(OutDir)$(ProjectName).xex</ImageXexOutput>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..;$(SolutionDir)imgui</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..;$(SolutionDir)..\imgui</AdditionalIncludeDirectories>
       <WarningLevel>Level4</WarningLevel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ObjectFileName>$(IntDir)$(ProjectName)\%(RelativeDir)</ObjectFileName>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableSpecificWarnings>4127</DisableSpecificWarnings>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
       <TreatWarningAsError Condition="'$(Configuration)'=='Release'">true</TreatWarningAsError>
       <Optimization Condition="'$(Configuration)'=='Debug'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)'=='Release'">Full</Optimization>
-      <FunctionLevelLinking Condition="'$(Configuration)'=='Release'">true</FunctionLevelLinking>
       <StringPooling Condition="'$(Configuration)'=='Release'">true</StringPooling>
       <IntrinsicFunctions Condition="'$(Configuration)'=='Release'">true</IntrinsicFunctions>
       <FavorSizeOrSpeed Condition="'$(Configuration)'=='Release'">Size</FavorSizeOrSpeed>
-      <RuntimeLibrary Condition="'$(Configuration)'=='Debug'">MultiThreadedDebug</RuntimeLibrary>
-      <RuntimeLibrary Condition="'$(Configuration)'=='Release'">MultiThreaded</RuntimeLibrary>
-      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_DEBUG;_XBOX;IMGUI_DISABLE_WIN32_FUNCTIONS</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">_XBOX;IMGUI_DISABLE_WIN32_FUNCTIONS</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Release'">NDEBUG;_XBOX;IMGUI_DISABLE_WIN32_FUNCTIONS</PreprocessorDefinitions>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;xgraphics.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SetChecksum>true</SetChecksum>
-      <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">xapilibd.lib;d3d9d.lib;d3dx9d.lib;xgraphicsd.lib</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Configuration)'=='Release'">xapilib.lib;d3d9.lib;d3dx9.lib;xgraphics.lib</AdditionalDependencies>
-      <OptimizeReferences Condition="'$(Configuration)'=='Release'">true</OptimizeReferences>
+      <AdditionalOptions>/DLL /ENTRY:"_DllMainCRTStartup" /ALIGN:128,4096 %(AdditionalOptions)</AdditionalOptions>
+      <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Deploy>
       <DeploymentType>CopyToHardDrive</DeploymentType>
     </Deploy>
-    <PostBuildEvent Condition="'$(Configuration)'=='Release'">
-      <Command>"$(XEDK)\bin\win32\xbreboot.exe" $(RemotePath)</Command>
-      <Message>Launch $(RemotePath) after it's built</Message>
-    </PostBuildEvent>
+    <ImageXex>
+      <ConfigurationFile>$(SolutionDir)config.xml</ConfigurationFile>
+    </ImageXex>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="imgui\imconfig.h" />
-    <ClInclude Include="imgui\imgui_internal.h" />
-    <ClInclude Include="imgui\imgui.h" />
-    <ClInclude Include="imgui\imstb_rectpack.h" />
-    <ClInclude Include="imgui\imstb_textedit.h" />
-    <ClInclude Include="imgui\imstb_truetype.h" />
-    <ClInclude Include="..\imgui_impl_dx9.h" />
-    <ClInclude Include="..\imgui_impl_xbox360.h" />
+    <ClInclude Include="..\imgui\imconfig.h" />
+    <ClInclude Include="..\imgui\imgui_internal.h" />
+    <ClInclude Include="..\imgui\imgui.h" />
+    <ClInclude Include="..\imgui\imstb_rectpack.h" />
+    <ClInclude Include="..\imgui\imstb_textedit.h" />
+    <ClInclude Include="..\imgui\imstb_truetype.h" />
+    <ClInclude Include="..\..\imgui_impl_dx9.h" />
+    <ClInclude Include="..\..\imgui_impl_xbox360.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="imgui\imgui_demo.cpp" />
-    <ClCompile Include="imgui\imgui_draw.cpp" />
-    <ClCompile Include="imgui\imgui_tables.cpp" />
-    <ClCompile Include="imgui\imgui_widgets.cpp" />
-    <ClCompile Include="imgui\imgui.cpp" />
-    <ClCompile Include="..\imgui_impl_dx9.cpp" />
-    <ClCompile Include="..\imgui_impl_xbox360.cpp" />
+    <ClCompile Include="..\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="..\imgui\imgui.cpp" />
+    <ClCompile Include="..\..\imgui_impl_dx9.cpp" />
+    <ClCompile Include="..\..\imgui_impl_xbox360.cpp" />
+    <ClCompile Include="Utils.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
 </Project>

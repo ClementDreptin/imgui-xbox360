@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "example", "example.vcxproj", "{847D1361-E6C3-4E2B-A8F8-2122973679F8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "title", "title.vcxproj", "{847D1361-E6C3-4E2B-A8F8-2122973679F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
